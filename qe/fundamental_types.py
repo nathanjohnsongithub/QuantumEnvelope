@@ -1,6 +1,7 @@
 from typing import Tuple, Dict, NamedTuple, List, NewType, Iterator
 from itertools import chain, product, combinations, takewhile
 from functools import partial, cache
+import qpx_cpp_module
 
 # Orbital index (0,1,2,...,n_orb-1)
 OrbitalIdx = NewType("OrbitalIdx", int)
@@ -11,7 +12,7 @@ Two_electron_integral = Dict[Two_electron_integral_index, float]
 
 Two_electron_integral_index_phase = Tuple[Two_electron_integral_index, bool]
 
-# One-electron integral :
+# One-electron integral :import qpx_cpp_module
 # $<i|h|k> = \int \phi_i(r) (-\frac{1}{2} \Delta + V_en ) \phi_k(r) dr$
 One_electron_integral = Dict[Tuple[OrbitalIdx, OrbitalIdx], float]
 
@@ -533,9 +534,13 @@ class Determinant(tuple):
         >>> Determinant(0b11, 0b11).exc_degree(Determinant(0b11, 0b101000))
         (0, 2)
         """
-        ed_up = (self.alpha ^ det_J.alpha).popcnt() // 2
-        ed_dn = (self.beta ^ det_J.beta).popcnt() // 2
-        return (ed_up, ed_dn)
+        if(isinstance(self.alpha, tuple)):
+            result = qpx_cpp_module.exc_degree_tuple(self.alpha, self.beta, det_J.alpha, det_J.beta)
+            return result
+        else:
+            ed_up = (self.alpha ^ det_J.alpha).popcnt() // 2
+            ed_dn = (self.beta ^ det_J.beta).popcnt() // 2
+            return (ed_up, ed_dn)
 
     def is_connected(self, det_j) -> Tuple[int, int]:
         """Compute the excitation degree, the number of orbitals which differ between the two determinants.
