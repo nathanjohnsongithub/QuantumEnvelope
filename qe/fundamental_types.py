@@ -12,7 +12,7 @@ Two_electron_integral = Dict[Two_electron_integral_index, float]
 
 Two_electron_integral_index_phase = Tuple[Two_electron_integral_index, bool]
 
-# One-electron integral :import qpx_cpp_module
+# One-electron integral :
 # $<i|h|k> = \int \phi_i(r) (-\frac{1}{2} \Delta + V_en ) \phi_k(r) dr$
 One_electron_integral = Dict[Tuple[OrbitalIdx, OrbitalIdx], float]
 
@@ -534,10 +534,14 @@ class Determinant(tuple):
         >>> Determinant(0b11, 0b11).exc_degree(Determinant(0b11, 0b101000))
         (0, 2)
         """
+        # Need to check if its a tuple because C++ cannot intuitively do so for calling function like python can 
         if(isinstance(self.alpha, tuple)):
+            # We call the C++ module for the exc_degree_tuple
+            # returns a tuple with ed_up and ed_dn
             result = qpx_cpp_module.exc_degree_tuple(self.alpha, self.beta, det_J.alpha, det_J.beta)
             return result
         else:
+            # If its not a tuple we do it the same way we have been
             ed_up = (self.alpha ^ det_J.alpha).popcnt() // 2
             ed_dn = (self.beta ^ det_J.beta).popcnt() // 2
             return (ed_up, ed_dn)
